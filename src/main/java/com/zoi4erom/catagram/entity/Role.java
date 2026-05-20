@@ -3,9 +3,6 @@ package com.zoi4erom.catagram.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.Set;
-
 @Entity
 @Table(name = "roles")
 @Getter
@@ -20,6 +17,6 @@ public class Role {
         private Long id;
 
         @Column(name = "role_name", nullable = false, unique = true)
-        private String roleName;
+        private String name;
 
 }

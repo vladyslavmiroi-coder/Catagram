@@ -28,6 +28,12 @@ public class User {
         @Column(nullable = false, length = 255)
         private String password;
 
+        @Column(name = "avatar_url", columnDefinition = "TEXT")
+        private String avatarUrl;
+
+        @Column(name = "language_code", nullable = false, length = 10)
+        private String languageCode = "en";
+
         @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
         private UserProfile profile;
 

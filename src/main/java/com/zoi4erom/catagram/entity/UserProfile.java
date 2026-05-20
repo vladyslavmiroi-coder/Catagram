@@ -2,6 +2,7 @@ package com.zoi4erom.catagram.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,9 +27,6 @@ public class UserProfile {
         @Column(unique = true, length = 100)
         private String email;
 
-        @Column(name = "avatar_url", columnDefinition = "TEXT")
-        private String avatarUrl;
-
         @Column(columnDefinition = "TEXT")
         private String bio;
 
@@ -41,9 +39,7 @@ public class UserProfile {
         @Column(length = 100)
         private String city;
 
-        @Column(name = "language_code", nullable = false, length = 10)
-        private String languageCode = "en";
-
-        @Column(name = "created_at")
+        @Column(name = "created_at", nullable = false, updatable = false)
+        @CreationTimestamp
         private LocalDateTime createdAt;
 }
