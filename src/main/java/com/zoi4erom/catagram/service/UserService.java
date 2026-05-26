@@ -13,7 +13,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -61,6 +63,16 @@ public class UserService implements CrudService<UserCreateDTO, UserUpdateDTO, Us
                         () -> new RuntimeException("User not found"));
 
                 return userMapper.toDto(user);
+        }
+
+        public List<UserReadDTO> findByUsernameContainingIgnoreCase(String username){
+                return userRepository.findByUsernameContainingIgnoreCase(username).stream()
+                        .map(userMapper::toDto)
+                        .collect(Collectors.toList());
+        }
+
+        public List<UserReadDTO> findAll() {
+                return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
         }
 
         public UserReadDTO findByUsername(String username) {

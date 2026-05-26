@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -25,6 +27,20 @@ public class UserController {
         @GetMapping("/{id}")
         public ResponseEntity<UserReadDTO> getUserById(@PathVariable Long id) {
                 return ResponseEntity.ok(userService.findById(id));
+        }
+
+        @GetMapping("/search/byUsername")
+        public ResponseEntity<List<UserReadDTO>> searchUsers(
+                @RequestParam String username
+        ) {
+                return ResponseEntity.ok(
+                        userService.findByUsernameContainingIgnoreCase(username)
+                );
+        }
+
+        @GetMapping
+        public ResponseEntity<List<UserReadDTO>> getAllUsers() {
+                return ResponseEntity.ok(userService.findAll());
         }
 
         @PutMapping

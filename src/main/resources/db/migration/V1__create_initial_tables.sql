@@ -36,6 +36,10 @@ CREATE TABLE roles
     role_name VARCHAR(50) NOT NULL UNIQUE
 );
 
+INSERT INTO roles (role_name)
+VALUES ('USER'),
+       ('ADMIN');
+
 CREATE TABLE user_roles
 (
     user_id BIGINT NOT NULL,
@@ -73,9 +77,11 @@ CREATE TABLE friendships
             REFERENCES users (id)
             ON DELETE CASCADE,
 
-    CONSTRAINT chk_not_same_user
-        CHECK (user_id <> friend_id)
+    CONSTRAINT chk_friendship_ordering
+        CHECK (user_id < friend_id)
 );
+
+CREATE UNIQUE INDEX idx_unique_friendship ON friendships (user_id, friend_id);
 
 CREATE TABLE friend_requests
 (
@@ -96,8 +102,14 @@ CREATE TABLE friend_requests
     CONSTRAINT fk_friend_requests_receiver
         FOREIGN KEY (receiver_id)
             REFERENCES users (id)
-            ON DELETE CASCADE
+            ON DELETE CASCADE,
+
+    CONSTRAINT chk_request_not_self
+        CHECK (sender_id <> receiver_id)
 );
+
+CREATE UNIQUE INDEX idx_unique_pending_request
+    ON friend_requests (LEAST(sender_id, receiver_id), GREATEST(sender_id, receiver_id));
 
 CREATE TABLE chats
 (
