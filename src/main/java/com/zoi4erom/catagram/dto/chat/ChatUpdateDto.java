@@ -6,7 +6,6 @@ public record ChatUpdateDto(
         String name,
         String description,
 
-        String avatarUrl,
         String bannerUrl,
 
         String visibilityType,

@@ -31,6 +31,10 @@ public class CustomUserDetails implements UserDetails {
                 return user.getUsername();
         }
 
+        public String getLanguageCode(){
+                return user.getLanguageCode();
+        }
+
         @Override
         public boolean isAccountNonExpired() {
                 return true;

@@ -58,7 +58,9 @@ INSERT INTO chat_members (
     user_id,
     role_id,
     joined_at,
-    is_muted,
+    muted_reason,
+    banned_reason,
+    muted_until,
     banned_until
 )
 SELECT
@@ -66,7 +68,9 @@ SELECT
     u.id,
     r.id,
     CURRENT_TIMESTAMP,
-    FALSE,
+    NULL,
+    NULL,
+    NULL,
     NULL
 FROM chats c
          JOIN users u ON u.username = 'CatAdmin'

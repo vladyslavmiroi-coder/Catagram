@@ -4,15 +4,18 @@ import com.zoi4erom.catagram.dto.message.MessageCreateDto;
 import com.zoi4erom.catagram.dto.message.MessageReadDto;
 import com.zoi4erom.catagram.dto.message.MessageUpdateDto;
 import com.zoi4erom.catagram.entity.Chat;
+import com.zoi4erom.catagram.entity.ChatMember;
 import com.zoi4erom.catagram.entity.Message;
 import com.zoi4erom.catagram.entity.User;
 import com.zoi4erom.catagram.mapper.MessageMapper;
+import com.zoi4erom.catagram.repository.ChatMemberRepository;
 import com.zoi4erom.catagram.repository.ChatRepository;
 import com.zoi4erom.catagram.repository.MessageRepository;
 import com.zoi4erom.catagram.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,6 +24,8 @@ import java.util.List;
 public class MessageService {
 
         private final MessageRepository messageRepository;
+        private final ChatMemberService chatMemberService;
+        private final ChatMemberRepository chatMemberRepository;
         private final ChatRepository chatRepository;
         private final UserRepository userRepository;
         private final MessageMapper messageMapper;
@@ -52,13 +57,27 @@ public class MessageService {
         }
 
         public MessageReadDto update(MessageUpdateDto dto) {
-
                 Message message = messageRepository.findById(dto.id())
                         .orElseThrow(() -> new RuntimeException("Message not found"));
 
+                if (dto.content() != null) {
+                        message.setContent(dto.content());
+                }
+
+                message.setIsEdited(true);
                 message.setUpdatedAt(LocalDateTime.now());
 
                 return messageMapper.toDto(messageRepository.save(message));
+        }
+
+        public void softDelete(Long id) {
+                Message message = messageRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Message not found"));
+
+                message.setIsDeleted(true);
+                message.setUpdatedAt(LocalDateTime.now());
+
+                messageRepository.save(message);
         }
 
         public void delete(Long id) {
@@ -70,6 +89,27 @@ public class MessageService {
                 message.setUpdatedAt(LocalDateTime.now());
 
                 messageRepository.save(message);
+        }
+
+        public void validateMessageSending(Long chatId, Long userId){
+                ChatMember member = chatMemberRepository.findByChatIdAndUserId(chatId, userId)
+                        .orElseThrow(() -> new RuntimeException("Ви не є учасником чату"));
+
+                if (chatMemberService.isBanned(member)) {
+                        try {
+                                throw new AccessDeniedException("Ви забанені до " + member.getBannedUntil() + ". Причина: " + member.getBannedReason());
+                        } catch (AccessDeniedException e) {
+                                throw new RuntimeException(e);
+                        }
+                }
+
+                if (chatMemberService.isMuted(member)) {
+                        try {
+                                throw new AccessDeniedException("Вам заборонено писати до " + member.getMutedUntil() + ". Причина: " + member.getMutedReason());
+                        } catch (AccessDeniedException e) {
+                                throw new RuntimeException(e);
+                        }
+                }
         }
 
         public List<MessageReadDto> getByChatId(Long chatId) {

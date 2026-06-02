@@ -3,16 +3,19 @@ package com.zoi4erom.catagram.service;
 import com.zoi4erom.catagram.dto.user.UserCreateDTO;
 import com.zoi4erom.catagram.dto.user.UserReadDTO;
 import com.zoi4erom.catagram.dto.user.UserUpdateDTO;
+import com.zoi4erom.catagram.entity.Chat;
+import com.zoi4erom.catagram.entity.ChatMember;
 import com.zoi4erom.catagram.entity.Role;
 import com.zoi4erom.catagram.entity.User;
 import com.zoi4erom.catagram.mapper.UserMapper;
-import com.zoi4erom.catagram.repository.RoleRepository;
-import com.zoi4erom.catagram.repository.UserRepository;
+import com.zoi4erom.catagram.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,8 +30,11 @@ public class UserService implements CrudService<UserCreateDTO, UserUpdateDTO, Us
         private final PasswordEncoder passwordEncoder;
         private final RoleRepository roleRepository;
         private final UserProfileService userProfileService;
+        private final ChatRepository chatRepository;
+        private final ChatMemberRepository chatMemberRepository;
 
         @Override
+        @Transactional
         public void create(UserCreateDTO createDTO) {
 
                 if (userRepository.existsByUsername(createDTO.username())) {
@@ -49,12 +55,27 @@ public class UserService implements CrudService<UserCreateDTO, UserUpdateDTO, Us
                                         )
                                 )
                                 .phoneNumber(createDTO.phoneNumber())
-                                .languageCode("en")
+                                .languageCode(createDTO.languageCode())
                                 .roles(Set.of(userRole))
                                 .build()
                 );
 
                 userProfileService.createUserProfile(user);
+
+                Chat globalChat = chatRepository.findById(1L)
+                        .orElseThrow(() -> new RuntimeException("Global chat not found"));
+
+                ChatMember chatMember = ChatMember.builder()
+                        .chat(globalChat)
+                        .user(user)
+                        .joinedAt(LocalDateTime.now())
+                        .mutedReason(null)
+                        .bannedReason(null)
+                        .bannedUntil(null)
+                        .mutedUntil(null)
+                        .build();
+
+                chatMemberRepository.save(chatMember);
         }
 
         @Override
@@ -84,12 +105,20 @@ public class UserService implements CrudService<UserCreateDTO, UserUpdateDTO, Us
 
         @Override
         public UserReadDTO update(UserUpdateDTO updateDTO) {
-                User user = userRepository.findById(updateDTO.id()).orElseThrow(
-                        () -> new RuntimeException("User not found"));
+                User user = userRepository.findById(updateDTO.id())
+                        .orElseThrow(() -> new RuntimeException("User not found"));
 
-                user.setUsername(updateDTO.username());
-                user.setPhoneNumber(updateDTO.phoneNumber());
-                user.setLanguageCode(updateDTO.languageCode());
+                if (updateDTO.username() != null) {
+                        user.setUsername(updateDTO.username());
+                }
+
+                if (updateDTO.phoneNumber() != null) {
+                        user.setPhoneNumber(updateDTO.phoneNumber());
+                }
+
+                if (updateDTO.languageCode() != null) {
+                        user.setLanguageCode(updateDTO.languageCode());
+                }
 
                 User updatedUser = userRepository.save(user);
 

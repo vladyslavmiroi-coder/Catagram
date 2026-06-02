@@ -33,9 +33,15 @@ public class ChatMember {
         @Column(name = "joined_at")
         private LocalDateTime joinedAt;
 
-        @Column(name = "is_muted")
-        private Boolean isMuted = false;
+        @Column(name = "muted_until")
+        private LocalDateTime mutedUntil;
 
         @Column(name = "banned_until")
         private LocalDateTime bannedUntil;
+
+        @Column(name = "muted_reason")
+        private String mutedReason;
+
+        @Column(name = "banned_reason")
+        private String bannedReason;
 }

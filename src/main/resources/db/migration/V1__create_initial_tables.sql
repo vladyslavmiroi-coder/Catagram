@@ -122,7 +122,6 @@ CREATE TABLE chats
     avatar_url      TEXT,
     banner_url      TEXT,
 
-    -- PUBLIC / PRIVATE
     visibility_type VARCHAR(20)  NOT NULL DEFAULT 'PRIVATE',
 
     owner_id        BIGINT       NOT NULL,
@@ -167,16 +166,18 @@ CREATE TABLE chat_roles
 
 CREATE TABLE chat_members
 (
-    id           BIGSERIAL PRIMARY KEY,
+    id            BIGSERIAL PRIMARY KEY,
 
-    chat_id      BIGINT NOT NULL,
-    user_id      BIGINT NOT NULL,
-    role_id      BIGINT,
+    chat_id       BIGINT NOT NULL,
+    user_id       BIGINT NOT NULL,
+    role_id       BIGINT,
 
-    joined_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    joined_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    is_muted     BOOLEAN   DEFAULT FALSE,
-    banned_until TIMESTAMP,
+    muted_reason  VARCHAR,
+    banned_reason VARCHAR,
+    muted_until   TIMESTAMP,
+    banned_until  TIMESTAMP,
 
     CONSTRAINT fk_chat_members_chat
         FOREIGN KEY (chat_id)
@@ -219,3 +220,21 @@ CREATE TABLE messages
             REFERENCES users (id)
             ON DELETE CASCADE
 );
+
+CREATE TABLE message_translations
+(
+    id            BIGSERIAL PRIMARY KEY,
+
+    message_id    BIGINT      NOT NULL,
+
+    language_code VARCHAR(10) NOT NULL,
+
+    content       TEXT        NOT NULL,
+
+    CONSTRAINT fk_message_translations_message
+        FOREIGN KEY (message_id)
+            REFERENCES messages (id)
+            ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX idx_unique_translation ON message_translations (message_id, language_code);

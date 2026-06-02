@@ -14,6 +14,7 @@ public class MessageMapper implements Mapper<Message, MessageReadDto> {
                         entity.getChat().getId(),
                         entity.getSender().getId(),
                         entity.getSender().getUsername(),
+                        entity.getSender().getLanguageCode(),
                         entity.getSender().getAvatarUrl(),
                         entity.getContent(),
                         entity.getIsEdited(),
